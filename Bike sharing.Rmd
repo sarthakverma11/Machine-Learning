@@ -1,0 +1,80 @@
+---
+title: "Bike Sharing Dataset"
+output:
+  html_document: default
+  pdf_document: default
+---
+
+```{r}
+library(dplyr)
+library(ggplot2)
+bike=read.csv('day.csv')
+
+bike$instant=NULL #Making Instant column Null
+
+bike$month=NULL  #Making month column Null
+
+#Extracting day and month from Date column
+bike$Date =as.Date(bike$dteday,format = '%Y-%m-%d')
+bike$Day = format(bike$Date, '%d')
+bike$month =format(bike$Date, '%m')
+bike$dteday=NULL
+bike$Date=NULL
+bike$month=as.numeric(bike$month)
+bike$Day=as.numeric(bike$Day)
+
+#Calculating Bike Rent month wise
+bike_rent=bike %>% group_by(month) %>% summarise(rent=round(mean(cnt)))
+bike_rent
+
+a=ggplot(bike_rent,aes(x=reorder(month,-rent),y=rent,group=1)) + geom_bar(stat="identity",aes(fill=month))
+a
+```
+
+#Calculating Average Rent for the Month of January
+```{r}
+bike1=filter(bike,month==01)
+bike1 = bike1 %>% group_by(Day) %>% summarise(Avg_Rent =round(mean(as.numeric(cnt))))
+bike1
+```
+
+#Creating a linear model to predict bike rent day wise
+```{r}
+library(caTools)
+set.seed(123)
+split=sample.split(bike1$Avg_Rent,SplitRatio = 0.70)
+training_set=subset(bike1,split==TRUE)
+test_set=subset(bike1,split==FALSE)
+```
+
+#Fitting a simple Linear Regression Model to predict the bike rent for January
+```{r}
+regressor=lm(formula = Avg_Rent~Day,data = training_set)
+summary(regressor)
+```
+#Predicting Test set Results
+
+```{r}
+y_pred = predict(regressor, newdata = test_set)
+y_pred
+```
+
+#Visualising the Test set Results
+```{r}
+library(ggplot2)
+library(plotly)
+a= ggplot() +
+ geom_point(aes(x = test_set$Day, y = test_set$Avg_Rent),
+             colour = 'red') +
+  geom_line(aes(x = training_set$Day, y = predict(regressor, newdata = training_set)),
+
+                        colour = 'blue') + 
+  ggtitle('Day vs Avg_Rent (Test set)') +
+  xlab('Day') +
+  ylab('Avg_Rent')  + labs(caption='Sarthak')
+ggplotly(a)
+```
+
+
+
+
