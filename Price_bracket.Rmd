@@ -1,0 +1,36 @@
+---
+title: "product categorisation"
+author: "Sarthak Verma"
+date: "30 January 2018"
+output: html_document
+---
+
+```{r}
+library(knitr)
+library(dplyr)
+library(ggplot2)
+```
+
+
+```{r}
+product=read.csv(file="D:/shopalyst/price_sample.csv")
+```
+
+```{r}
+product$price=as.numeric(levels(prod$price))[prod$price]
+dim(product)
+str(product)
+summary(product)
+```
+
+```{r}
+product_new=product %>% group_by(category)
+product_level=product %>% mutate(pricing=cut(product$price,breaks=c(quantile(product$price,probability=c(0,0.75,0.99,1),na.rm=T)),labels=c("low","medium","high")))
+final_product=merge(product_new,prod_level,na.rm=T)
+
+final_product %>% ggplot(aes(x=category,y=price,fill=pricing))+geom_bar(stat = "identity")
+
+```
+
+
+
