@@ -1,0 +1,132 @@
+---
+title: "Titanic Kaggle"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+```{r}
+library(tree)
+
+```
+
+```{r}
+titanic = read.csv("train.csv")
+```
+
+
+```{r}
+sample_titanic = sample.int(n = nrow(titanic), size = floor(0.70*nrow(titanic)), replace = F)
+
+
+titanic_data_train = titanic[sample_titanic,]
+titanic_data_train$Survived = as.factor(titanic_data_train$Survived)
+
+titanic_data_test = titanic[-sample_titanic,]
+
+```
+
+```{r}
+test = read.csv("test.csv")
+```
+
+Data Imputation
+```{r}
+#Replacing the blank values with mode (Data Imputation)
+titanic_data_train$Age[is.na(titanic_data_train$Age)] = median(titanic_data_train$Age, na.rm = TRUE)
+```
+
+```{r}
+titanic.model = tree(Survived ~Pclass+Sex+Age+SibSp+Parch+Embarked,data = titanic_data_train)
+titanic.model
+summary(titanic.model)
+plot(titanic.model)
+text(titanic.model)
+
+model_prediction = predict(titanic.model,titanic_data_test[,-2])
+model_prediction
+
+maxidx = function(arr)
+{
+  return(which(arr == max(arr)))
+}
+
+idx = apply(model_prediction, c(1), maxidx)
+
+modelprediction = c(0,1)[idx]
+
+confmat = table(modelprediction, titanic_data_test$Survived)
+confmat #confusion matrix
+
+accuracy = sum(diag(confmat))/sum(confmat)
+accuracy
+
+```
+
+```{r}
+
+titanic.model = tree(Survived ~Pclass+Sex+Age+SibSp+Parch+Embarked,data = titanic_data_train)
+titanic.model
+summary(titanic.model)
+plot(titanic.model)
+text(titanic.model)
+
+model_prediction = predict(titanic.model,test)
+model_prediction
+
+maxidx = function(arr)
+{
+  return(which(arr == max(arr)))
+}
+
+idx = apply(model_prediction, c(1), maxidx)
+
+Survived = c(0,1)[idx]
+
+PassengerId = test$PassengerId
+
+Predicted_values = data.frame(PassengerId, Survived)
+Predicted_values
+
+write.csv(Predicted_values, "C:/Users/Administrator/Desktop/DS402/submission3.csv" , row.names = F)
+
+```
+
+Training with 100% dataset
+```{r}
+sample_titanic = sample.int(n = nrow(titanic), size = floor(1.00*nrow(titanic)), replace = F)
+titanic_data_train = titanic[sample_titanic,]
+titanic_data_train$Survived = as.factor(titanic_data_train$Survived)
+
+titanic_data_train$Age[is.na(titanic_data_train$Age)] = median(titanic_data_train$Age, na.rm = TRUE)
+
+titanic.model = tree(Survived ~Pclass+Sex+Age+SibSp+Parch+Embarked, data = titanic_data_train)
+titanic.model
+summary(titanic.model)
+plot(titanic.model)
+text(titanic.model)
+
+model_prediction = predict(titanic.model,test)
+model_prediction
+
+maxidx = function(arr)
+{
+  return(which(arr == max(arr)))
+}
+
+idx = apply(model_prediction, c(1), maxidx)
+
+Survived = c(0,1)[idx]
+
+PassengerId = test$PassengerId
+
+Predicted_values = data.frame(PassengerId, Survived)
+Predicted_values
+
+write.csv(Predicted_values, "C:/Users/Administrator/Desktop/DS402/submission4.csv" , row.names = F)
+
+
+```
