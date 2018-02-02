@@ -1,0 +1,39 @@
+---
+title: "Recommender system using Apriori ALgorithm"
+output: html_document
+---
+
+```{r}
+recommender=read.csv("events.csv",header = FALSE)
+View(recommender)
+dim(recommender)
+colnames(recommender)=c("timestamp","event","product_id","shopper_id","department",
+                        "category","sub_category","gender","brand")
+View(recommender)
+str(recommender)
+colSums(is.na(recommender))
+
+```
+
+```{r}
+recommender=read.csv("events.csv",header = FALSE)
+colnames(recommender)=c("timestamp","event","product_id","shopper_id","department",
+                        "category","sub_category","gender","brand")
+
+install.packages("arules")
+
+library(arules)
+recommender = read.transactions('events.csv', sep = ',', rm.duplicates = TRUE)
+summary(recommender)
+View(recommender)
+itemFrequencyPlot(recommender, topN = 10)
+```````
+
+
+```{r}
+rules = apriori(data = recommender, parameter = list(support = 0.004, confidence = 0.2))
+inspect(sort(rules, by = 'lift')[1:10])
+
+```
+
+
